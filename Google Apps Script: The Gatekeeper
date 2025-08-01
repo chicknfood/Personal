@@ -1,0 +1,166 @@
+/**************************************************************************************************
+ * Google Apps Script - Babysitting Tracker API (v2.4)
+ *
+ * This script now manages two sheets: one for individual time entries and one for
+ * monthly reimbursement amounts, ensuring all data is persistent.
+ *
+ * v2.4 PATCH: Implemented a universal date-parsing logic. This version will attempt
+ * to create a Date object from any non-empty cell in the Reimbursements sheet's
+ * month column, making it resilient to various formats Google Sheets might use
+ * (text, number, or Date object). This provides a single, robust pathway for
+ * data sanitation and should resolve all duplication/omission issues.
+ **************************************************************************************************/
+
+const ENTRIES_SHEET_NAME = "Sheet1";
+const REIMBURSEMENTS_SHEET_NAME = "Reimbursements";
+
+/**
+ * Handles HTTP GET requests.
+ * Fetches all data from both the entries sheet and the reimbursements sheet.
+ */
+function doGet(e) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // --- Get Entries Data ---
+    const entriesSheet = spreadsheet.getSheetByName(ENTRIES_SHEET_NAME);
+    const entriesData = entriesSheet.getDataRange().getValues();
+    const entriesHeaders = entriesData.shift() || [];
+    const activeEntries = entriesData.filter(row => row[entriesHeaders.indexOf('Status')] !== 'DELETED');
+    const entriesJson = activeEntries.map(row => {
+      let obj = {};
+      entriesHeaders.forEach((header, index) => {
+        obj[header] = row[index];
+      });
+      return obj;
+    });
+
+    // --- Get Reimbursements Data ---
+    const reimbursementsSheet = spreadsheet.getSheetByName(REIMBURSEMENTS_SHEET_NAME);
+    const reimbursementsData = reimbursementsSheet.getDataRange().getValues();
+    reimbursementsData.shift(); // Remove header row
+    const reimbursementsJson = {};
+    reimbursementsData.forEach(row => {
+      // Ensure we don't process rows that don't have at least a month and an amount.
+      if (row[0] && (row[1] !== null && row[1] !== '')) {
+        try {
+          // Create a Date object regardless of the input type (string, number, or existing Date)
+          const dateObj = new Date(row[0]);
+          
+          // Check if the created date is valid. new Date('invalid') returns an invalid date.
+          if (!isNaN(dateObj.getTime())) {
+            const year = dateObj.getFullYear();
+            // getMonth() is 0-indexed, add 1. Pad with '0' if needed.
+            const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+            const monthKey = `${year}-${month}`;
+            
+            const amount = parseFloat(row[1]);
+
+            // Final check that amount is a valid number
+            if (!isNaN(amount)) {
+              reimbursementsJson[monthKey] = amount;
+            }
+          }
+        } catch (err) {
+          // Log errors for debugging if needed, but continue processing other rows.
+          Logger.log(`Skipping invalid row in Reimbursements sheet: ${row}. Error: ${err.message}`);
+        }
+      }
+    });
+
+    // --- Combine and Return Data ---
+    const responseData = {
+      entries: entriesJson,
+      reimbursements: reimbursementsJson
+    };
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true, data: responseData }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: error.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Handles HTTP POST requests.
+ * Now includes logic for adding/deleting entries AND setting reimbursement amounts.
+ */
+function doPost(e) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const request = JSON.parse(e.postData.contents);
+
+    // ACTION: Add a new entry
+    if (request.action === 'addEntry') {
+      const sheet = spreadsheet.getSheetByName(ENTRIES_SHEET_NAME);
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const newRow = headers.map(header => request.data[header] || "");
+      sheet.appendRow(newRow);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, data: request.data }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ACTION: Delete an entry
+    if (request.action === 'deleteEntry') {
+      const sheet = spreadsheet.getSheetByName(ENTRIES_SHEET_NAME);
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const entryId = request.data.id;
+      const idColumnIndex = headers.indexOf('ID') + 1;
+      const statusColumnIndex = headers.indexOf('Status') + 1;
+      const data = sheet.getDataRange().getValues();
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][idColumnIndex - 1].toString() === entryId.toString()) {
+           sheet.getRange(i + 1, statusColumnIndex).setValue('DELETED');
+           return ContentService.createTextOutput(JSON.stringify({ success: true, message: `Entry ${entryId} marked as deleted.` })).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      throw new Error(`Entry with ID ${entryId} not found.`);
+    }
+    
+    // ACTION: Set a monthly reimbursement amount
+    if (request.action === 'setReimbursement') {
+      const sheet = spreadsheet.getSheetByName(REIMBURSEMENTS_SHEET_NAME);
+      const data = sheet.getDataRange().getValues();
+      const monthKey = request.data.monthKey;
+      const amount = request.data.amount;
+      
+      let rowFound = false;
+      // Start at 1 to skip header
+      for (let i = 1; i < data.length; i++) {
+        let keyFromSheet;
+        if (data[i][0]) {
+            try {
+                const dateObj = new Date(data[i][0]);
+                if (!isNaN(dateObj.getTime())) {
+                    const year = dateObj.getFullYear();
+                    const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+                    keyFromSheet = `${year}-${month}`;
+                }
+            } catch (err) { /* ignore parse error */ }
+        }
+        
+        if (keyFromSheet && keyFromSheet === monthKey) {
+          sheet.getRange(i + 1, 2).setValue(amount); // Update existing amount
+          rowFound = true;
+          break;
+        }
+      }
+      
+      if (!rowFound) {
+        sheet.appendRow([monthKey, amount]); // Add new month and amount
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({ success: true, data: request.data })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    throw new Error("Invalid action specified.");
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, message: error.message })).setMimeType(ContentService.MimeType.JSON);
+  }
+}

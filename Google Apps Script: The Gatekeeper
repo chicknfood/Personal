@@ -9,6 +9,27 @@
  * month column, making it resilient to various formats Google Sheets might use
  * (text, number, or Date object). This provides a single, robust pathway for
  * data sanitation and should resolve all duplication/omission issues.
+
+Instructions for the Final Upgrade:
+
+1. Navigate to your "Babysitting Ledger" Google Sheet.
+
+2. In the menu, go to Extensions > Apps Script.
+
+3. Delete the entire contents of the script editor.
+
+4. Copy and paste the new, corrected code from the artifact below.
+
+5. Click the Deploy button, then select Manage deployments.
+
+6. In the dialog box, find your active deployment and click the pencil icon (Edit) on the right.
+
+7. From the "Version" dropdown, select New version.
+
+8. Click the Deploy button.
+
+Once you have redeployed the script, please refresh the tracker application.
+
  **************************************************************************************************/
 
 const ENTRIES_SHEET_NAME = "Sheet1";

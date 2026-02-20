@@ -236,6 +236,34 @@
                 loader.style.display = show ? 'flex' : 'none';
             };
 
+            // --- UTILITY FUNCTIONS ---
+            const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+            const formatHours = (hours) => (hours || 0).toFixed(2);
+            const formatTime = (date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            const formatTimeFrame = (start, end) => {
+                const startStr = formatTime(start);
+                let endStr = formatTime(end);
+                if (start.toDateString() !== end.toDateString()) {
+                    const dateHint = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    endStr += ` (${dateHint})`;
+                }
+                return `${startStr} - ${endStr}`;
+            };
+
+            // Unified rate calculator to ensure consistency across calculations and data-fetching
+            const getHourlyRate = (dateString, totalHours) => {
+                // Safely extract the year directly from the YYYY-MM-DD string to avoid timezone shifts
+                const year = parseInt(dateString.substring(0, 4), 10);
+                if (year >= 2026) {
+                    // Forward-thinking protocol: Flat $22/hour starting Jan 2026
+                    return 22;
+                } else {
+                    // Legacy protocol: $20/hour for < 8 hrs, $22/hour for >= 8 hrs
+                    return totalHours >= 8 ? 22 : 20;
+                }
+            };
+
             // --- API COMMUNICATION ---
             async function fetchData() {
                 try {
@@ -250,7 +278,20 @@
                         const formattedStartTime = !isNaN(startTimeObj) ? startTimeObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) : "00:00";
                         const endTimeObj = new Date(entry.EndTime);
                         const formattedEndTime = !isNaN(endTimeObj) ? endTimeObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) : "00:00";
-                        return { ...entry, StartDate: formattedStartDate, EndDate: formattedEndDate, StartTime: formattedStartTime, EndTime: formattedEndTime, TotalHours: parseFloat(entry.TotalHours), TotalPay: parseFloat(entry.TotalPay) };
+                        
+                        const totalHours = parseFloat(entry.TotalHours);
+                        let totalPay = parseFloat(entry.TotalPay);
+
+                        // Self-healing ledger protocol: Recalculate based on unified logic. 
+                        // This resolves instances where Google Sheets cached/saved legacy $20/hr data for 2026.
+                        const correctRate = getHourlyRate(formattedStartDate, totalHours);
+                        const expectedPay = totalHours * correctRate;
+                        
+                        if (Math.abs(totalPay - expectedPay) > 0.01) {
+                            totalPay = expectedPay; // Override with precise calculated pay
+                        }
+
+                        return { ...entry, StartDate: formattedStartDate, EndDate: formattedEndDate, StartTime: formattedStartTime, EndTime: formattedEndTime, TotalHours: totalHours, TotalPay: totalPay };
                     });
                     
                     return { entries: parsedEntries, reimbursements: result.data.reimbursements };
@@ -271,21 +312,6 @@
                     return { success: false };
                 }
             }
-            
-            // --- UTILITY FUNCTIONS ---
-            const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-            const formatHours = (hours) => (hours || 0).toFixed(2);
-            const formatTime = (date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-            const formatTimeFrame = (start, end) => {
-                const startStr = formatTime(start);
-                let endStr = formatTime(end);
-                if (start.toDateString() !== end.toDateString()) {
-                    const dateHint = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    endStr += ` (${dateHint})`;
-                }
-                return `${startStr} - ${endStr}`;
-            };
 
             // --- CORE CALCULATION LOGIC ---
             const calculateEntry = (entryData) => {
@@ -296,16 +322,7 @@
                 const exactHours = diffMs / (1000 * 60 * 60);
                 const totalHours = Math.round(exactHours / 0.25) * 0.25;
                 
-                // *** CHANGE: Dynamic temporal rate calculation ***
-                let hourlyRate;
-                if (entryData.StartDate >= '2026-01-01') {
-                    // Forward-thinking protocol: Flat $22/hour starting Jan 2026
-                    hourlyRate = 22;
-                } else {
-                    // Legacy protocol: $20/hour for < 8 hrs, $22/hour for >= 8 hrs
-                    hourlyRate = totalHours >= 8 ? 22 : 20;
-                }
-
+                const hourlyRate = getHourlyRate(entryData.StartDate, totalHours);
                 const totalPay = totalHours * hourlyRate;
 
                 return { ...entryData, ID: Date.now(), TotalHours: totalHours, TotalPay: totalPay, Status: 'ACTIVE' };

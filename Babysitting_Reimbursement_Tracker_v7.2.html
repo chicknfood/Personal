@@ -215,7 +215,6 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CONFIGURATION ---
             const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzeTn1iJ1k5eQOFh3ITgYfcWIWrHl3RGftd1cTWc_7fNAQVf3pGd8F1tDjxSGeJmsoO4w/exec";
-            // Hourly rate is now dynamic, so the constant is removed.
 
             // --- DOM ELEMENTS ---
             const loader = document.getElementById('loader');
@@ -297,8 +296,16 @@
                 const exactHours = diffMs / (1000 * 60 * 60);
                 const totalHours = Math.round(exactHours / 0.25) * 0.25;
                 
-                // *** CHANGE: Dynamic hourly rate calculation ***
-                const hourlyRate = totalHours >= 8 ? 22 : 20;
+                // *** CHANGE: Dynamic temporal rate calculation ***
+                let hourlyRate;
+                if (entryData.StartDate >= '2026-01-01') {
+                    // Forward-thinking protocol: Flat $22/hour starting Jan 2026
+                    hourlyRate = 22;
+                } else {
+                    // Legacy protocol: $20/hour for < 8 hrs, $22/hour for >= 8 hrs
+                    hourlyRate = totalHours >= 8 ? 22 : 20;
+                }
+
                 const totalPay = totalHours * hourlyRate;
 
                 return { ...entryData, ID: Date.now(), TotalHours: totalHours, TotalPay: totalPay, Status: 'ACTIVE' };
@@ -327,8 +334,8 @@
                         const actualStart = new Date(`${entry.StartDate}T${entry.StartTime}`);
                         const actualEnd = new Date(`${entry.EndDate}T${entry.EndTime}`);
                         
-                        // *** CHANGE: Determine rate for display ***
-                        const rateForEntry = entry.TotalHours >= 8 ? 22 : 20;
+                        // Dynamically deduce the historic rate applied to maintain pristine visual records
+                        const rateForEntry = entry.TotalHours > 0 ? (entry.TotalPay / entry.TotalHours) : 0;
 
                         row.innerHTML = `
                             <td class="table-cell">${entry.StartDate}</td>

@@ -34,3 +34,10 @@ const standaloneHtml = `<!doctype html>
 const outputPath = path.join(rootDir, 'standalone.html');
 fs.writeFileSync(outputPath, standaloneHtml, 'utf-8');
 console.log('✓ Created standalone single-file app at standalone.html');
+
+// Also update root portal Multiplication_Trainer.html if running inside Personal repo
+const portalPath = path.resolve(rootDir, '..', 'Multiplication_Trainer.html');
+if (fs.existsSync(path.dirname(portalPath))) {
+  fs.writeFileSync(portalPath, standaloneHtml, 'utf-8');
+  console.log('✓ Updated root portal at ../Multiplication_Trainer.html');
+}

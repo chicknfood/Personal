@@ -39,9 +39,12 @@ export async function getCachedVideo(creatureId) {
         const result = request.result;
         if (!result) return resolve(null);
 
-        // If stored as a Blob, create an object URL for playback
+        // If stored as Blob(s), create object URL(s) for playback
         if (result.videoBlob) {
           result.videoUrl = URL.createObjectURL(result.videoBlob);
+        }
+        if (result.adventureBlob) {
+          result.adventureVideoUrl = URL.createObjectURL(result.adventureBlob);
         }
         resolve(result);
       };
@@ -57,7 +60,7 @@ export async function getCachedVideo(creatureId) {
 /**
  * Save video into IndexedDB cache
  */
-export async function saveCachedVideo(creatureId, { videoBlob, videoUrl, engine = '', prompts = null }) {
+export async function saveCachedVideo(creatureId, { videoBlob, adventureBlob = null, videoUrl, adventureVideoUrl = null, engine = '', prompts = null }) {
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -67,7 +70,9 @@ export async function saveCachedVideo(creatureId, { videoBlob, videoUrl, engine 
       const entry = {
         creatureId,
         videoBlob: videoBlob || null,
+        adventureBlob: adventureBlob || null,
         videoUrl: videoUrl || null,
+        adventureVideoUrl: adventureVideoUrl || null,
         engine: engine || '',
         prompts: prompts || null,
         createdAt: new Date().toISOString()

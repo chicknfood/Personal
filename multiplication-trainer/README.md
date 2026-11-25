@@ -10,7 +10,13 @@ Based on the original Gemini generation: [share.gemini.google/U70cTptbNRtp](http
 
 Play instantly from any browser, tablet, or phone—no download required:
 - **🚀 App Launcher Portal**: **[https://chicknfood.github.io/Personal/](https://chicknfood.github.io/Personal/)**
-- **⚡ Direct Multiplication Trainer (`v1.1.0`)**: **[https://chicknfood.github.io/Personal/Multiplication_Trainer.html](https://chicknfood.github.io/Personal/Multiplication_Trainer.html)**
+- **⚡ Direct Multiplication Trainer (`v1.2.0`)**: **[https://chicknfood.github.io/Personal/Multiplication_Trainer.html](https://chicknfood.github.io/Personal/Multiplication_Trainer.html)**
+
+### 🔑 Enabling AI Videos on GitHub Pages (Bring Your Own Key)
+Click the **AI Key** button (top-left of the home screen or inside the Celebration Modal) to enter **either** credential directly in your browser (stored only in your browser's `localStorage`):
+1. **Option 1 — Google Gemini API Key (`AIzaSy...` / `AQ...`)**: Easiest setup; generates 3 custom HD AI multi-creature scenes in ~15–25s. *Drawback: Google restricts API keys from calling Veo video endpoints directly, so scenes use smooth Ken Burns camera motion over HD stills rather than full 3D motion/audio.*
+2. **Option 2 — Google Cloud Service Account JSON (`.json` upload or paste)**: Unlocks **true Veo 3.1 720p cinematic video + stereo audio** directly in your browser via Web Crypto OAuth2. *Drawbacks: Requires a billed Google Cloud project with Agent Platform API + `Vertex AI Agent Platform User` role enabled, takes 60–90s per unlock, and incurs Vertex AI Veo per-second billing.*
+*(Privacy drawback: Avoid saving keys on shared/public computers—use **Clear Saved Keys** when finished, or leave both blank for the free built-in 3D preview).*
 
 ---
 

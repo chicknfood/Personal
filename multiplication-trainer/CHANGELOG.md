@@ -6,6 +6,17 @@ All notable changes to the Multiplication Trainer & Bestiary Codex are documente
 
 ---
 
+## [v1.2.0] - 2026-11-25
+
+### ✨ Added
+- **Browser-Direct "Bring Your Own Key" AI Videos on GitHub Pages (`browserAiVideo.js` & `AiCredentialsModal.jsx`)**:
+  - Added full client-side support for **both** a **Google Gemini API Key** (`AIzaSy...` / `AQ...`) and a **Google Cloud Service Account JSON** (`.json` file upload or paste) directly on static GitHub Pages (`chicknfood.github.io/Personal`).
+  - **Web Crypto OAuth2 for Veo 3.1**: Signs RS256 JWTs natively via `window.crypto.subtle` to call `veo-3.1-fast-generate-001` directly from the browser, with `<canvas>` last-frame extraction and seamless dual-clip 720p + stereo audio playback.
+  - **Browser Gemini 3.1 Image Cinema Fallback**: When only a Gemini API key is supplied, generates 3 custom HD multi-creature scenes in-browser via `gemini-3.1-flash-image`.
+  - **Clear Credential Comparison & Drawbacks Guide**: Added side-by-side guidance explaining both key options, their billing/motion tradeoffs, browser `localStorage` privacy considerations, and a one-click **Clear Saved Keys** button.
+
+---
+
 ## [v1.1.0] - 2026-11-25
 
 ### ✨ Added

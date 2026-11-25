@@ -20,6 +20,7 @@ import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged }
 import { getFirestore, collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
 import CelebrationModal from './components/CelebrationModal';
+import AiCredentialsModal from './components/AiCredentialsModal';
 import { getAllCachedVideoIds } from './utils/videoCache';
 
 // --- CLOUD DATABASE SETUP ---
@@ -67,8 +68,8 @@ export default function App() {
   const [unlockedCreatures, setUnlockedCreatures] = useState([]);
   const [cachedVideoIds, setCachedVideoIds] = useState([]);
   const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [serviceAccountJson, setServiceAccountJson] = useState('');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [tempApiKey, setTempApiKey] = useState('');
 
   // Celebration Modal state
   const [celebrationCreature, setCelebrationCreature] = useState(null);
@@ -87,11 +88,10 @@ export default function App() {
     }
   }, []);
 
-  // Load cached video IDs and API key
+  // Load cached video IDs and browser AI credentials
   useEffect(() => {
-    const key = localStorage.getItem('gemini_api_key') || '';
-    setGeminiApiKey(key);
-    setTempApiKey(key);
+    setGeminiApiKey(localStorage.getItem('gemini_api_key') || '');
+    setServiceAccountJson(localStorage.getItem('gcp_service_account_json') || '');
 
     getAllCachedVideoIds()
       .then(ids => setCachedVideoIds(ids))
@@ -350,9 +350,12 @@ export default function App() {
           {/* AI Settings Button */}
           <button 
             onClick={() => setShowApiKeyModal(true)}
-            className="absolute left-0 top-0 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-3 rounded-2xl transition-all flex flex-col items-center shadow-sm"
-            title="Configure Gemini AI Key for Veo 2 Video Synthesis"
+            className="absolute left-0 top-0 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-3 rounded-2xl transition-all flex flex-col items-center shadow-sm relative"
+            title="Configure Gemini API Key or Google Cloud Service Account"
           >
+            {(geminiApiKey || serviceAccountJson) && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+            )}
             <Key size={24} />
             <span className="text-[10px] font-bold mt-1 uppercase tracking-wider">AI Key</span>
           </button>
@@ -724,68 +727,17 @@ export default function App() {
       {gameState === 'results' && renderResults()}
       {gameState === 'codex' && renderCodex()}
 
-      {/* Global API Key Settings Modal */}
-      {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white">
-            <button
-              onClick={() => setShowApiKeyModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full bg-white/5"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-2xl">
-                <Key size={26} />
-              </div>
-              <div>
-                <h3 className="text-xl font-black">Google Gemini AI Settings</h3>
-                <p className="text-xs text-slate-400">Powers 3D Card & Adventure Videos</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed mb-4">
-              Enter your Google GenAI / Gemini API key. This is used by <code className="text-pink-400">gemini-2.5-flash</code> and <code className="text-indigo-400">veo-2.0-generate-001</code> to generate holographic foil cards and 3D action runs.
-            </p>
-
-            <div className="space-y-3 mb-6">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Gemini API Key
-              </label>
-              <input
-                type="password"
-                placeholder="AIzaSy..."
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-              />
-              <p className="text-[11px] text-slate-500">
-                Key is stored locally in your browser and used only for your video generation calls.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowApiKeyModal(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setGeminiApiKey(tempApiKey);
-                  localStorage.setItem('gemini_api_key', tempApiKey);
-                  setShowApiKeyModal(false);
-                }}
-                className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 rounded-xl text-xs font-extrabold text-white shadow-lg"
-              >
-                Save Key
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Unified AI Key & Service Account Settings Modal */}
+      <AiCredentialsModal
+        isOpen={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        apiKey={geminiApiKey}
+        serviceAccountJson={serviceAccountJson}
+        onSave={({ apiKey: nextKey, serviceAccountJson: nextSa }) => {
+          setGeminiApiKey(nextKey);
+          setServiceAccountJson(nextSa);
+        }}
+      />
 
       {/* Cinematic 3D Adventure Celebration Modal */}
       <CelebrationModal
@@ -798,9 +750,10 @@ export default function App() {
         }}
         isCodexReplay={isCodexReplay}
         apiKey={geminiApiKey}
-        onSaveApiKey={(key) => {
-          setGeminiApiKey(key);
-          setTempApiKey(key);
+        serviceAccountJson={serviceAccountJson}
+        onSaveCredentials={({ apiKey: nextKey, serviceAccountJson: nextSa }) => {
+          setGeminiApiKey(nextKey);
+          setServiceAccountJson(nextSa);
         }}
       />
     </div>

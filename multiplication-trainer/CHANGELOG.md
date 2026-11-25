@@ -1,6 +1,8 @@
 # Changelog — Math Champions: Multiplication Trainer
 
 All notable changes to the Multiplication Trainer & Bestiary Codex are documented here.
+- **🌐 Live App Launcher (GitHub Pages)**: [https://chicknfood.github.io/Personal/](https://chicknfood.github.io/Personal/)
+- **⚡ Direct App Link**: [https://chicknfood.github.io/Personal/Multiplication_Trainer.html](https://chicknfood.github.io/Personal/Multiplication_Trainer.html)
 
 ---
 

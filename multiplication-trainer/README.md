@@ -6,6 +6,14 @@ Based on the original Gemini generation: [share.gemini.google/U70cTptbNRtp](http
 
 ---
 
+## 🌐 Live Web Access (GitHub Pages)
+
+Play instantly from any browser, tablet, or phone—no download required:
+- **🚀 App Launcher Portal**: **[https://chicknfood.github.io/Personal/](https://chicknfood.github.io/Personal/)**
+- **⚡ Direct Multiplication Trainer (`v1.1.0`)**: **[https://chicknfood.github.io/Personal/Multiplication_Trainer.html](https://chicknfood.github.io/Personal/Multiplication_Trainer.html)**
+
+---
+
 ## 🆕 What's New in v1.1.0
 
 - **🎬 3D Creature Card & Veo 3.1 Cinematic Video Unlocks**: Unlocking a creature triggers a sparkle-shader loading card followed by a seamless 12-second **Veo 3.1** 720p cinematic video (4s 3D holographic foil card reveal + 8s Unreal Engine 5 adventure extension) with downloadable MP4 support and instant Codex replay. *(Includes an automatic built-in 3D preview when running on static GitHub Pages or offline).*

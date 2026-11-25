@@ -181,7 +181,11 @@ Other fantastical creatures inhabiting this world include: Chrono-Phoenix (cosmi
 Analyze this collectible card image and output a JSON object containing two specific, vivid visual prompts:
 
 1. "cardPrompt": Focus on an animated 3D holographic foil collectible trading card with iridescent metallic reflections, volumetric shimmering light rays, floating glowing elemental particles, and ${creatureName} dynamically emerging from the frame ready for action.
-2. "adventurePrompt": MUST show active multi-creature interaction—NEVER solo exploration or running alone! Describe the camera dramatically plunging through the card into an Unreal Engine 5 3D fantasy arena or landscape where "${creatureName}" engages in an "${encounterMode}" with one of the other distinct fantasy creatures listed above (pick a visually contrasting creature and describe its appearance clearly!). Show dynamic choreography: either clashing dazzling ${creatureElement} energy beams, dodging elemental shockwaves, and trading magical strikes in an exciting fantasy duel, OR fighting side-by-side with an allied creature to combine their two elemental powers into a synchronized combo wave against a towering elemental boss/obstacle. Keep the action colorful, family-friendly fantasy magic (no gore or blood).
+2. "adventurePrompt": MUST keep "${creatureName}" as the unmistakable CENTER-STAGE HERO in the foreground, actively using and showcasing its signature "${creatureElement}" powers while interacting with one other distinct fantasy creature from the list above—NEVER solo exploration and NEVER let the other creature steal the spotlight! Choreograph all 8 seconds in 3 clear visual beats:
+   - Beat 1 (Charge-Up): Starting seamlessly from "${creatureName}" emerging out of the card, the camera locks onto "${creatureName}" as its body, eyes, and limbs visibly ignite and surge with its unmistakable "${creatureElement}" power (describe the exact physical visual effect of ${creatureElement}!).
+   - Beat 2 (Power Showcase & Interaction): "${creatureName}" actively unleashes its signature "${creatureElement}" ability—firing a dazzling elemental beam, summoning elemental barriers/storms, or launching a radiant energy wave—directly into an "${encounterMode}" with a visually contrasting fellow creature (either clashing powers mid-air in an exciting fantasy duel where "${creatureName}"'s power visibly pushes back, OR combining its "${creatureElement}" energy with an allied creature's power in a synchronized combo strike).
+   - Beat 3 (Heroic Payoff): Dynamic hero close-up/medium shot spotlighting "${creatureName}" radiating "${creatureElement}" energy as the combo or duel resolves in a burst of colorful magical sparks.
+   Keep the action vivid, family-friendly Unreal Engine 5 fantasy magic (no gore or blood) and do NOT waste time on empty landscape flyovers.
 
 Respond ONLY with valid JSON matching:
 {
@@ -204,7 +208,7 @@ async function generatePromptsClientSide({
 }) {
   const fallbackPrompts = {
     cardPrompt: `3D holographic foil collectible card of ${creatureName} with iridescent rainbow metallic sheen, volumetric light rays, floating ${creatureElement} particles, and dynamic 3D creature motion emerging from the frame.`,
-    adventurePrompt: `Camera plunges into an Unreal Engine 5 fantasy arena where ${creatureName} clashes dazzling ${creatureElement} energy beams and performs dynamic team-up battle choreography alongside a towering glowing Crystal-Golem and lightning Storm-Griffin.`
+    adventurePrompt: `Unreal Engine 5 hero-spotlight action scene keeping ${creatureName} center-stage in the foreground: ${creatureName} charges up glowing ${creatureElement} energy across its body, then unleashes a massive radiant ${creatureElement} wave that clashes mid-air with a towering Crystal-Golem and combines with a lightning Storm-Griffin in a dazzling burst of magical sparks.`
   };
 
   const parts = [
@@ -373,8 +377,8 @@ async function generateBrowserImageCinema({
 
   const scenePrompts = [
     `Photorealistic 3D holographic foil collectible trading card floating in dramatic dark studio lighting, rainbow iridescent metallic frame, glowing ${creature.element} particles swirling around ${creature.name}, volumetric light rays, 16:9 widescreen cinematic shot, no blurry text. ${prompts.cardPrompt}`,
-    `Epic third-person action video game screenshot in Unreal Engine 5 aesthetic, ${creature.name} clashing dazzling ${creature.element} magic or teaming up side-by-side with another fantastical elemental creature in a glowing fantasy arena, dramatic lighting, 16:9 widescreen. ${prompts.adventurePrompt}`,
-    `Unreal Engine 5 epic multi-creature climax, ${creature.name} and a fellow mythical elemental creature combining a spectacular synchronized ${creature.element} combo wave across a vibrant fantasy landscape, volumetric god rays, 16:9 widescreen.`
+    `Epic third-person action video game screenshot in Unreal Engine 5 aesthetic, spotlighting ${creature.name} center-stage in the foreground actively unleashing its signature ${creature.element} power directly against or alongside another fantastical elemental creature in a glowing fantasy arena, dramatic lighting, 16:9 widescreen. ${prompts.adventurePrompt}`,
+    `Unreal Engine 5 hero spotlight climax, ${creature.name} front-and-center unleashing a massive unmistakable ${creature.element} signature ability interacting with a rival or allied mythical creature across a vibrant fantasy arena, volumetric god rays, 16:9 widescreen.`
   ];
 
   const images = await Promise.all(

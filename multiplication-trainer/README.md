@@ -6,6 +6,15 @@ Based on the original Gemini generation: [share.gemini.google/U70cTptbNRtp](http
 
 ---
 
+## 🆕 What's New in v1.1.0
+
+- **🎬 3D Creature Card & Veo 3.1 Cinematic Video Unlocks**: Unlocking a creature triggers a sparkle-shader loading card followed by a seamless 12-second **Veo 3.1** 720p cinematic video (4s 3D holographic foil card reveal + 8s Unreal Engine 5 adventure extension) with downloadable MP4 support and instant Codex replay. *(Includes an automatic built-in 3D preview when running on static GitHub Pages or offline).*
+- **⚔️ Multi-Creature Duels & Co-op Combos**: Cinematic videos feature dynamic magical clashes or cooperative team-up combo attacks alongside fellow Bestiary creatures.
+- **⌨️ Fast Keyboard & Numeric Keypad Input**: Type answers with `0`–`9` (top row or numpad), fix typos with `Backspace`/`Delete`, and press `Enter` to submit answers or advance past missed-question reviews.
+- See full release history in [CHANGELOG.md](./CHANGELOG.md).
+
+---
+
 ## ⚡ Quick Reference Guide (For Beginners)
 
 You can run this application in **3 easy ways**—choose whichever feels most comfortable!

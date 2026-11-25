@@ -206,6 +206,45 @@ export default function App() {
   const handleNumpad = (val) => { if (userAnswer.length < 3 && !showCorrection) setUserAnswer(prev => prev + val); };
   const handleBackspace = () => { if (!showCorrection) setUserAnswer(prev => prev.slice(0, -1)); };
 
+  // Keep latest handlers in a ref for fast, lag-free physical keyboard & numpad input
+  const keyActionsRef = useRef({});
+  keyActionsRef.current = {
+    gameState,
+    showCorrection,
+    showApiKeyModal,
+    celebrationCreature,
+    handleNumpad,
+    handleBackspace,
+    submitAnswer,
+    nextQuestion
+  };
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const state = keyActionsRef.current;
+      if (state.gameState !== 'playing' || state.showApiKeyModal || state.celebrationCreature) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        state.handleNumpad(e.key);
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        state.handleBackspace();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (state.showCorrection) {
+          state.nextQuestion(false);
+        } else {
+          state.submitAnswer();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   // --- LOGIC: Setup ---
   const toggleTable = (num) => {
     setSelectedTables(prev => 
@@ -478,8 +517,12 @@ export default function App() {
           <button onClick={submitAnswer} disabled={showCorrection} className="bg-emerald-500 text-white text-xl font-bold py-4 rounded-2xl shadow-sm border-b-4 border-emerald-600 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"><Play fill="currentColor" size={24} /></button>
         </div>
 
+        <p className="text-xs font-semibold text-gray-400 text-center">
+          ⌨️ Tip: Type with your number keys / keypad and press <kbd className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded font-bold">Enter</kbd> to submit!
+        </p>
+
         {showCorrection && (
-          <button onClick={() => nextQuestion(false)} className="w-full py-4 bg-gray-800 text-white text-lg font-bold rounded-2xl shadow-lg hover:bg-gray-700 transition-all animate-bounce">Next Question →</button>
+          <button onClick={() => nextQuestion(false)} className="w-full py-4 bg-gray-800 text-white text-lg font-bold rounded-2xl shadow-lg hover:bg-gray-700 transition-all animate-bounce">Next Question (Enter) →</button>
         )}
       </div>
     );

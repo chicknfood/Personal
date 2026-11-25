@@ -57,7 +57,7 @@ export async function getCachedVideo(creatureId) {
 /**
  * Save video into IndexedDB cache
  */
-export async function saveCachedVideo(creatureId, { videoBlob, videoUrl, prompts = null }) {
+export async function saveCachedVideo(creatureId, { videoBlob, videoUrl, engine = '', prompts = null }) {
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -68,6 +68,7 @@ export async function saveCachedVideo(creatureId, { videoBlob, videoUrl, prompts
         creatureId,
         videoBlob: videoBlob || null,
         videoUrl: videoUrl || null,
+        engine: engine || '',
         prompts: prompts || null,
         createdAt: new Date().toISOString()
       };

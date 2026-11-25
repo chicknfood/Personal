@@ -32,6 +32,9 @@ export default function CelebrationModal({
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fallbackNotice, setFallbackNotice] = useState('');
+  const [engineLabel, setEngineLabel] = useState('');
+  const [regenCounter, setRegenCounter] = useState(0);
   const [showKeyPrompt, setShowKeyPrompt] = useState(false);
   const [inputKey, setInputKey] = useState(apiKey);
 
@@ -83,78 +86,115 @@ export default function CelebrationModal({
     if (!isOpen || !creature) return;
 
     let isMounted = true;
+    const isForcedRegen = regenCounter > 0;
 
     async function loadVideo() {
       setPhase('loading');
       setErrorMessage('');
+      setFallbackNotice('');
       setProgress(0);
 
       try {
-        // 1. Check client IndexedDB cache first
-        setLoadingStep('Checking Bestiary video cache...');
-        const cached = await getCachedVideo(creature.id);
-        if (cached && (cached.videoUrl || cached.videoBlob)) {
-          if (!isMounted) return;
-          console.log(`[CelebrationModal] Replaying cached video for ${creature.name}`);
-          setVideoData(cached);
-          setPhase('ready');
-          return;
+        const isStaticHost =
+          typeof window !== 'undefined' &&
+          (window.location.protocol === 'file:' || window.location.hostname.endsWith('github.io'));
+
+        // 1. Check client IndexedDB cache first (skip offline demo cache on local dev server so it upgrades to Veo 3.1)
+        if (!isForcedRegen) {
+          setLoadingStep('Checking Bestiary video cache...');
+          const cached = await getCachedVideo(creature.id);
+          if (
+            cached &&
+            (cached.videoUrl || cached.videoBlob) &&
+            (isStaticHost || (cached.engine && cached.engine !== 'Offline Demo'))
+          ) {
+            if (!isMounted) return;
+            console.log(`[CelebrationModal] Replaying cached video for ${creature.name}`);
+            setEngineLabel(cached.engine || 'Cached Video');
+            setVideoData(cached);
+            setPhase('ready');
+            return;
+          }
         }
 
         // 2. Generate clean collectible card image crop
         setLoadingStep('Synthesizing 3D collectible holographic card...');
         const cardImageBase64 = await generateCreatureCardAsset(creature);
 
-        // 3. Try Backend Endpoint
-        setLoadingStep('Connecting to Veo 2 video synthesis engine...');
-        const storedKey = apiKey || localStorage.getItem('gemini_api_key') || '';
-
+        // 3. Call Backend Endpoint when not on static-only hosting (Gemini 3.8 + Veo 3.1 / Gemini 3.1 AI Cinema)
         let backendSuccess = false;
-        try {
-          const res = await fetch('/api/generate-creature-video', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-gemini-api-key': storedKey
-            },
-            body: JSON.stringify({
-              creatureId: creature.id,
-              creatureName: creature.name,
-              creatureElement: creature.element || 'Cosmic Flame',
-              creatureDescription: creature.description,
-              creatureImageBase64: cardImageBase64,
-              apiKey: storedKey
-            })
-          });
+        let lastBackendError = '';
+        if (!isStaticHost) {
+          setLoadingStep('Generating AI 3D Card & Creature Encounter Video (60–90s)...');
+          const storedKey = apiKey || localStorage.getItem('gemini_api_key') || '';
 
-          if (res.ok) {
-            const data = await res.json();
-            if (data.videoUrl) {
-              backendSuccess = true;
-              if (!isMounted) return;
-              const resultObj = {
+          try {
+            const res = await fetch('/api/generate-creature-video', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-gemini-api-key': storedKey
+              },
+              body: JSON.stringify({
                 creatureId: creature.id,
-                videoUrl: data.videoUrl,
-                prompts: data.prompts
-              };
-              await saveCachedVideo(creature.id, resultObj);
-              setVideoData(resultObj);
-              setPhase('ready');
-              return;
+                creatureName: creature.name,
+                creatureElement: creature.element || 'Cosmic Flame',
+                creatureDescription: creature.description,
+                creatureImageBase64: cardImageBase64,
+                apiKey: storedKey,
+                forceRegenerate: isForcedRegen
+              })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data.videoUrl) {
+                backendSuccess = true;
+                if (!isMounted) return;
+                let videoBlob = null;
+                try {
+                  const blobRes = await fetch(data.videoUrl);
+                  if (blobRes.ok) videoBlob = await blobRes.blob();
+                } catch (e) {}
+
+                const engine = data.engine || 'Veo 3.1 (Cinematic AI)';
+                const resultObj = {
+                  creatureId: creature.id,
+                  videoUrl: videoBlob ? URL.createObjectURL(videoBlob) : data.videoUrl,
+                  videoBlob,
+                  engine,
+                  prompts: data.prompts
+                };
+                await saveCachedVideo(creature.id, resultObj);
+                setEngineLabel(engine);
+                setVideoData(resultObj);
+                setPhase('ready');
+                return;
+              }
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              lastBackendError =
+                res.status === 404 || res.status === 405
+                  ? ''
+                  : errData.error || `Server error (${res.status})`;
+              if (lastBackendError) console.warn('[CelebrationModal] Backend error:', lastBackendError);
             }
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            if (errData.needsKey) {
-              console.log('[CelebrationModal] No API Key found, offering Demo fallback');
-            }
+          } catch (netErr) {
+            lastBackendError = netErr.message;
+            console.warn('[CelebrationModal] Serverless endpoint unavailable:', netErr.message);
           }
-        } catch (netErr) {
-          console.warn('[CelebrationModal] Serverless endpoint unavailable:', netErr.message);
         }
 
-        // 4. Fallback / Simulation Demo Mode (if no API key or offline)
+        // 4. Fallback / Simulation Demo Mode (static GitHub Pages or offline mode)
         if (!backendSuccess) {
-          setLoadingStep('Generating 3D Adventure continuous animation...');
+          setFallbackNotice(
+            isStaticHost
+              ? 'GitHub Pages static mode — playing built-in 3D preview (run local dev server for Veo 3.1 AI cinema)'
+              : lastBackendError
+              ? `AI backend unavailable (${lastBackendError}) — showing offline demo`
+              : 'Offline 3D preview mode'
+          );
+          setLoadingStep('Generating 3D Adventure preview...');
           const simResult = await generateSimulatedCreatureVideo(creature, {
             onProgress: (p) => {
               if (isMounted) setProgress(Math.round(p * 100));
@@ -162,8 +202,10 @@ export default function CelebrationModal({
           });
 
           if (!isMounted) return;
-          await saveCachedVideo(creature.id, simResult);
-          setVideoData(simResult);
+          const entry = { ...simResult, engine: 'Offline Demo' };
+          await saveCachedVideo(creature.id, entry);
+          setEngineLabel('Offline Demo');
+          setVideoData(entry);
           setPhase('ready');
         }
       } catch (err) {
@@ -180,7 +222,7 @@ export default function CelebrationModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, creature]);
+  }, [isOpen, creature, regenCounter]);
 
   // Video Time & Progress sync
   const handleTimeUpdate = () => {
@@ -413,6 +455,14 @@ export default function CelebrationModal({
 
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={() => setRegenCounter(c => c + 1)}
+                      title="Regenerate a fresh AI video"
+                      className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-full transition-colors"
+                    >
+                      <Sparkles size={14} className="text-yellow-300" />
+                      <span className="hidden sm:inline">Regenerate</span>
+                    </button>
+                    <button
                       onClick={handleDownload}
                       className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold px-4 py-2 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
                     >
@@ -432,7 +482,7 @@ export default function CelebrationModal({
               <h4 className="text-lg font-bold text-white">Video Generation Unavailable</h4>
               <p className="text-xs text-slate-300 leading-relaxed">{errorMessage}</p>
               <button
-                onClick={() => setPhase('loading')}
+                onClick={() => setRegenCounter(c => c + 1)}
                 className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-full text-xs shadow-md transition-all"
               >
                 Retry Generation
@@ -444,10 +494,10 @@ export default function CelebrationModal({
         {/* Footer info */}
         <div className="px-6 py-3 bg-slate-900 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
           <span className="truncate max-w-md">
-            {creature.description}
+            {fallbackNotice ? <span className="text-amber-400 font-semibold">{fallbackNotice}</span> : creature.description}
           </span>
           <span className="text-indigo-400 font-semibold flex-shrink-0">
-            Powered by Google Veo 2 & Gemini 2.5
+            {engineLabel ? `Engine: ${engineLabel}` : 'Powered by Google Gemini AI'}
           </span>
         </div>
       </div>

@@ -34,7 +34,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'math-trainer-app';
 const TOTAL_QUESTIONS = 64; 
 const NUMBERS_AVAILABLE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const TIME_LIMITS = [
-  { label: 'Ninja (3s)', value: 3, modifier: 10, speedBonus: 5, badge: '+10 Cap / +5 Spd', badgeClass: 'text-emerald-700 bg-emerald-100' },
+  { label: 'Ninja (3s)', value: 3, modifier: 10, speedBonus: 5, badge: '+10 Grade', subBadge: '+5 Speed Bonus', badgeClass: 'text-emerald-700 bg-emerald-100' },
   { label: 'Normal (5s)', value: 5, modifier: 0, speedBonus: 0, badge: 'Standard (0)', badgeClass: 'text-indigo-700 bg-indigo-100' },
   { label: 'Relaxed (10s)', value: 10, modifier: -10, speedBonus: 0, badge: '-10 Penalty', badgeClass: 'text-amber-700 bg-amber-100' },
   { label: 'Unlimited', value: 0, modifier: -20, speedBonus: 0, badge: '-20 Penalty', badgeClass: 'text-rose-700 bg-rose-100' },
@@ -403,12 +403,9 @@ export default function App() {
           {/* AI Settings Button */}
           <button 
             onClick={() => setShowApiKeyModal(true)}
-            className="absolute left-0 top-0 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-3 rounded-2xl transition-all flex flex-col items-center shadow-sm relative"
+            className="absolute left-0 top-0 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-3 rounded-2xl transition-all flex flex-col items-center shadow-sm"
             title="Configure Gemini API Key or Google Cloud Service Account"
           >
-            {(geminiApiKey || serviceAccountJson) && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
-            )}
             <Key size={24} />
             <span className="text-[10px] font-bold mt-1 uppercase tracking-wider">AI Key</span>
           </button>
@@ -508,8 +505,14 @@ export default function App() {
                 >
                   <Clock size={16} />
                   <span>{limit.label}</span>
-                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${limit.badgeClass}`}>
+                  <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full leading-tight text-center ${limit.badgeClass}`}>
                     {limit.badge}
+                    {limit.subBadge && (
+                      <>
+                        <br />
+                        {limit.subBadge}
+                      </>
+                    )}
                   </span>
                 </button>
               ))}
@@ -662,7 +665,7 @@ export default function App() {
                   }`}
                 >
                   {timerLabel}: {timerModifier > 0 ? `+${timerModifier}` : timerModifier}
-                  {speedBonus > 0 ? ` (+${speedBonus} Spd)` : ''}
+                  {speedBonus > 0 ? ` (+${speedBonus} Speed Bonus)` : ''}
                 </span>
               </div>
               <div className="flex flex-col items-center sm:border-l border-white/10">

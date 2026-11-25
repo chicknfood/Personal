@@ -176,7 +176,7 @@ Elemental Power: "${creatureElement}"
 Lore Description: "${creatureDescription}"
 Target Encounter Style: "${encounterMode}"
 
-Other fantastical creatures inhabiting this world include: Chrono-Phoenix (cosmic flame bird), Nebula-Kraken (starlight cephalopod), Astro-Leviathan (supernova dragon), Quantum-Yeti (ice cyber beast), Mecha-Pegasus (jet-winged cyber steed), Storm-Griffin (lightning sky-hunter), Crystal-Golem (giant geode guardian), Lunar-Moth (starlight winged moth), Volt-Fox (electric plasma fox), Aqua-Slime (torrential water slime), Copper-Scarab (clockwork brass beetle), Ember-Sprite (wildfire flame spirit), Breeze-Bunny (aero wind rabbit), and Moss-Turtle (ancient forest stone turtle).
+Other fantastical creatures inhabiting this world include: Chrono-Phoenix (cosmic flame bird), Nebula-Kraken (starlight cephalopod), Astro-Leviathan (supernova dragon), Quantum-Yeti (ice cyber beast), Mecha-Pegasus (jet-winged cyber steed), Storm-Griffin (lightning sky-hunter), Crystal-Golem (giant geode guardian), Lunar-Moth (starlight winged moth), Volt-Fox (electric plasma fox), Aqua-Slime (torrential water slime), Copper-Scarab (clockwork brass beetle), Ember-Sprite (wildfire flame spirit), Breeze-Bunny (aero wind rabbit), Moss-Turtle (ancient forest stone turtle), Spark-Owl (static-feathered night owl), Coral-Crab (tidal reef crab), Timber-Cub (wooden-armored forest bear cub), Dew-Frog (misty lily-pad frog), Glimmer-Bee (sunbeam honeycomb bee), and Frost-Chick (icy snow penguin).
 
 Analyze this collectible card image and output a JSON object containing two specific, vivid visual prompts:
 

@@ -33,6 +33,14 @@ export async function generateCreatureCardAsset(creature) {
     bgGrad.addColorStop(0, '#7c2d12');
     bgGrad.addColorStop(0.5, '#292524');
     bgGrad.addColorStop(1, '#0c0a09');
+  } else if (creature.rarity === 'Apprentice') {
+    bgGrad.addColorStop(0, '#3b0764');
+    bgGrad.addColorStop(0.5, '#1e1b4b');
+    bgGrad.addColorStop(1, '#0f172a');
+  } else if (creature.rarity === 'Novice') {
+    bgGrad.addColorStop(0, '#14532d');
+    bgGrad.addColorStop(0.5, '#0f172a');
+    bgGrad.addColorStop(1, '#020617');
   } else {
     bgGrad.addColorStop(0, '#064e3b');
     bgGrad.addColorStop(0.5, '#1c1917');
@@ -132,7 +140,11 @@ export async function generateCreatureCardAsset(creature) {
   ctx.fillStyle =
     creature.rarity === 'Mythic' ? '#fb7185' :
     creature.rarity === 'Legendary' ? '#e879f9' :
-    creature.rarity === 'Rare' ? '#60a5fa' : '#34d399';
+    creature.rarity === 'Rare' ? '#60a5fa' :
+    creature.rarity === 'Uncommon' ? '#fb923c' :
+    creature.rarity === 'Apprentice' ? '#a78bfa' :
+    creature.rarity === 'Novice' ? '#a3e635' :
+    creature.rarity === 'Basic' ? '#94a3b8' : '#34d399';
   ctx.fillText(`◆ ${creature.rarity.toUpperCase()} GRADE TIER ◆`, cx, height * 0.81);
 
   // 8. Description box at bottom

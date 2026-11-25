@@ -371,7 +371,17 @@ export default function CelebrationModal({
                       ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                       : creature.rarity === 'Legendary'
                       ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40'
-                      : 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                      : creature.rarity === 'Rare'
+                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                      : creature.rarity === 'Uncommon'
+                      ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
+                      : creature.rarity === 'Common'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : creature.rarity === 'Apprentice'
+                      ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40'
+                      : creature.rarity === 'Novice'
+                      ? 'bg-lime-500/20 text-lime-300 border border-lime-500/40'
+                      : 'bg-slate-500/20 text-slate-300 border border-slate-500/40'
                   }`}
                 >
                   {creature.rarity}

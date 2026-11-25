@@ -6,6 +6,24 @@ All notable changes to the Multiplication Trainer & Bestiary Codex are documente
 
 ---
 
+## [v1.3.0] - 2026-11-25
+
+### ✨ Added & Updated
+- **Timer Speed Bonuses & Penalties**:
+  - **Ninja (3s)**: `+10` Max Grade Cap and `+5` Speed Cushion (`+5` safety buffer on earned Complexity Grade).
+  - **Normal (5s)**: Standard `0` modifier.
+  - **Relaxed (10s)**: `-10` Max Grade Penalty.
+  - **Unlimited**: `-20` Max Grade Penalty.
+  - Added live table vs. timer breakdown in the Setup screen and a color-coded timer modifier pill on the Results card.
+- **Scaling Streak Multipliers & Grade Bonus**:
+  - Live combo score scales from `1×` up to `5×` every 5 consecutive correct answers (`5→1.5×`, `10→2×`, `15→2.5×`, `20→3×`, ..., `40+→5×`), multiplied by timer base points (`150` Ninja, `100` Normal, `75` Relaxed, `50` Unlimited).
+  - Longer streaks also award up to `+12` bonus points toward your Complexity Grade (`5→+1`, `10→+2`, `15→+4`, `20→+6`, `25→+8`, `30→+10`, `35+→+12`), displayed in the live HUD and 4-column Results card.
+- **Expanded Bestiary (18 → 24 Creatures across 8 Balanced Tiers)**:
+  - Filled the Grade 0–50 gap with **Grade 35 (Apprentice)**: *Spark-Owl*, *Coral-Crab*, *Timber-Cub* and **Grade 20 (Novice)**: *Dew-Frog*, *Glimmer-Bee*, *Frost-Chick*.
+  - Preserved all 18 original creature IDs so previously unlocked creatures and cached 3D videos remain intact.
+
+---
+
 ## [v1.2.0] - 2026-11-25
 
 ### ✨ Added

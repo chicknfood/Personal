@@ -10,7 +10,7 @@ Based on the original Gemini generation: [share.gemini.google/U70cTptbNRtp](http
 
 Play instantly from any browser, tablet, or phone—no download required:
 - **🚀 App Launcher Portal**: **[https://chicknfood.github.io/Personal/](https://chicknfood.github.io/Personal/)**
-- **⚡ Direct Multiplication Trainer (`v1.2.0`)**: **[https://chicknfood.github.io/Personal/Multiplication_Trainer.html](https://chicknfood.github.io/Personal/Multiplication_Trainer.html)**
+- **⚡ Direct Multiplication Trainer (`v1.3.0`)**: **[https://chicknfood.github.io/Personal/Multiplication_Trainer.html](https://chicknfood.github.io/Personal/Multiplication_Trainer.html)**
 
 ### 🔑 Enabling AI Videos on GitHub Pages (Bring Your Own Key)
 Click the **AI Key** button (top-left of the home screen or inside the Celebration Modal) to enter **either** credential directly in your browser (stored only in your browser's `localStorage`):
@@ -110,9 +110,12 @@ npm start
   - **Unlimited** (no timer)
 - **64-Question Mastery Drill**: Randomly drawn problems from your selected tables with instant visual review on missed or timed-out questions.
 - **Custom On-Screen Numpad**: Built for fast touch or mouse input without mobile keyboard popups.
-- **18 Fantastical Creatures (Bestiary Codex)**:
+- **24 Fantastical Creatures (Bestiary Codex — 8 Tiers × 3)**:
   - **Mythic (Grade 100)**: Chrono-Phoenix, Nebula-Kraken, Seraph-Prime
   - **Legendary (Grade 95+)**: Astro-Leviathan, Quantum-Yeti, Mecha-Pegasus
   - **Rare (Grade 85+)**: Storm-Griffin, Crystal-Golem, Lunar-Moth
   - **Uncommon (Grade 70+)**: Volt-Fox, Aqua-Slime, Copper-Scarab
-  - **Common (Grade 50+)**: Ember-Sprite, Breeze-Bunny, Iron-Tortoise, Moss-Gekko, Sand-Puffer, Pebble-Crab
+  - **Common (Grade 50+)**: Ember-Sprite, Breeze-Bunny, Moss-Turtle
+  - **Apprentice (Grade 35+)**: Spark-Owl, Coral-Crab, Timber-Cub
+  - **Novice (Grade 20+)**: Dew-Frog, Glimmer-Bee, Frost-Chick
+  - **Basic (Grade 0+)**: Cobble-Sprout, Star-Dust, Pebble-Pup

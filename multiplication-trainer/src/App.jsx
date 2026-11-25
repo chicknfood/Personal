@@ -34,13 +34,13 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'math-trainer-app';
 const TOTAL_QUESTIONS = 64; 
 const NUMBERS_AVAILABLE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const TIME_LIMITS = [
-  { label: 'Relaxed (10s)', value: 10 },
-  { label: 'Normal (5s)', value: 5 },
-  { label: 'Ninja (3s)', value: 3 },
-  { label: 'Unlimited', value: 0 },
+  { label: 'Ninja (3s)', value: 3, modifier: 10, speedBonus: 5, badge: '+10 Cap / +5 Spd', badgeClass: 'text-emerald-700 bg-emerald-100' },
+  { label: 'Normal (5s)', value: 5, modifier: 0, speedBonus: 0, badge: 'Standard (0)', badgeClass: 'text-indigo-700 bg-indigo-100' },
+  { label: 'Relaxed (10s)', value: 10, modifier: -10, speedBonus: 0, badge: '-10 Penalty', badgeClass: 'text-amber-700 bg-amber-100' },
+  { label: 'Unlimited', value: 0, modifier: -20, speedBonus: 0, badge: '-20 Penalty', badgeClass: 'text-rose-700 bg-rose-100' },
 ];
 
-// --- 18 FANTASTICAL CREATURES ---
+// --- 24 FANTASTICAL CREATURES (8 TIERS × 3) ---
 const CREATURES = [
   { threshold: 100, id: "chrono-phoenix", name: "Chrono-Phoenix", rarity: "Mythic", element: "Time & Cosmic Flame", emoji: "🦚", bgGradient: "from-rose-500 via-red-500 to-amber-500", shadow: "shadow-red-500/50", description: "Bends the fabric of reality! Only reveals itself to those who achieve absolute perfection." },
   { threshold: 100, id: "nebula-kraken", name: "Nebula-Kraken", rarity: "Mythic", element: "Void & Dark Matter", emoji: "🦑", bgGradient: "from-indigo-900 via-purple-800 to-black", shadow: "shadow-purple-900/50", description: "A cosmic cephalopod that calculates the mass of black holes. Requires a flawless mind!" },
@@ -57,10 +57,29 @@ const CREATURES = [
   { threshold: 50, id: "ember-sprite", name: "Ember-Sprite", rarity: "Common", element: "Wildfire & Embers", emoji: "🔥", bgGradient: "from-amber-400 to-orange-600", shadow: "shadow-amber-500/50", description: "A mischievous little flame that loves numbers. Helps warm up your brain for calculations!" },
   { threshold: 50, id: "breeze-bunny", name: "Breeze-Bunny", rarity: "Common", element: "Wind & Aero Mist", emoji: "🐇", bgGradient: "from-sky-200 to-blue-400", shadow: "shadow-sky-400/50", description: "Hops on currents of air! Faster than a calculator, but sometimes trips over remainders." },
   { threshold: 50, id: "moss-turtle", name: "Moss-Turtle", rarity: "Common", element: "Forest Moss & Stone", emoji: "🐢", bgGradient: "from-green-600 to-emerald-800", shadow: "shadow-green-600/50", description: "Slow, steady, and wise. Reminds you that taking your time to get it right is key!" },
+  { threshold: 35, id: "spark-owl", name: "Spark-Owl", rarity: "Apprentice", element: "Static Feathers & Twilight", emoji: "🦉", bgGradient: "from-violet-400 to-indigo-600", shadow: "shadow-violet-500/50", description: "A sharp-eyed night watcher whose feathers crackle with static whenever you spot a number pattern!" },
+  { threshold: 35, id: "coral-crab", name: "Coral-Crab", rarity: "Apprentice", element: "Tidal Shell & Reef", emoji: "🦀", bgGradient: "from-rose-400 to-orange-500", shadow: "shadow-rose-400/50", description: "Scuttles across sunlit reefs counting seashells in rapid multiples of three and four." },
+  { threshold: 35, id: "timber-cub", name: "Timber-Cub", rarity: "Apprentice", element: "Bramble & Forest Bark", emoji: "🐻", bgGradient: "from-amber-700 to-emerald-700", shadow: "shadow-amber-700/50", description: "A sturdy woodland cub whose wooden armor grows stronger with every practice round you finish!" },
+  { threshold: 20, id: "dew-frog", name: "Dew-Frog", rarity: "Novice", element: "Morning Mist & Lily", emoji: "🐸", bgGradient: "from-lime-400 to-emerald-600", shadow: "shadow-lime-500/50", description: "Leaps from lily pad to lily pad! Loves cheering on beginners as they build their momentum." },
+  { threshold: 20, id: "glimmer-bee", name: "Glimmer-Bee", rarity: "Novice", element: "Honeycomb & Sunbeam", emoji: "🐝", bgGradient: "from-yellow-400 to-amber-500", shadow: "shadow-yellow-400/50", description: "Builds glowing golden hexagons in the sky. Busy, bright, and always eager to practice!" },
+  { threshold: 20, id: "frost-chick", name: "Frost-Chick", rarity: "Novice", element: "Flurry Snow & Ice", emoji: "🐧", bgGradient: "from-cyan-300 to-sky-500", shadow: "shadow-sky-400/50", description: "Slides across icy hills with boundless energy! Even small steps forward earn big cheers." },
   { threshold: 0, id: "cobble-sprout", name: "Cobble-Sprout", rarity: "Basic", element: "Flora & Earth Sprout", emoji: "🌱", bgGradient: "from-emerald-400 to-green-600", shadow: "shadow-emerald-500/50", description: "A tiny rock-plant. Might be small now, but with practice, it will grow into a mountain!" },
   { threshold: 0, id: "star-dust", name: "Star-Dust", rarity: "Basic", element: "Nebular Dust & Starlight", emoji: "☄️", bgGradient: "from-gray-400 to-slate-600", shadow: "shadow-gray-500/50", description: "A tiny speck of stardust. Remember, even the largest galaxies started just like this!" },
   { threshold: 0, id: "pebble-pup", name: "Pebble-Pup", rarity: "Basic", element: "Solid Stone & Granite", emoji: "🪨", bgGradient: "from-stone-400 to-stone-600", shadow: "shadow-stone-500/50", description: "A rock shaped like a puppy! It wags its little tail when you learn from a mistake." }
 ];
+
+const RARITY_TEXT_COLORS = {
+  Mythic: 'text-rose-400',
+  Legendary: 'text-fuchsia-400',
+  Rare: 'text-blue-400',
+  Uncommon: 'text-orange-400',
+  Common: 'text-emerald-400',
+  Apprentice: 'text-violet-400',
+  Novice: 'text-lime-400',
+  Basic: 'text-slate-400'
+};
+
+const getRarityTextColor = (rarity) => RARITY_TEXT_COLORS[rarity] || 'text-emerald-400';
 
 export default function App() {
   // --- STATE ---
@@ -110,10 +129,11 @@ export default function App() {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [streak, setStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
+  const [score, setScore] = useState(0);
   const [history, setHistory] = useState([]);
   const [showCorrection, setShowCorrection] = useState(false);
   
-  const [displayedReward, setDisplayedReward] = useState({ creature: null, isNew: false, finalGrade: 0, rawAccuracy: 0 });
+  const [displayedReward, setDisplayedReward] = useState({ creature: null, isNew: false, finalGrade: 0, rawAccuracy: 0, timerLabel: 'Normal (5s)', timerModifier: 0, speedBonus: 0, streakBonus: 0, totalScore: 0 });
   const [selectedCodexCreature, setSelectedCodexCreature] = useState(null); // For popup
 
   // --- CLOUD SYNC LOGIC ---
@@ -171,22 +191,25 @@ export default function App() {
 
     if (isCorrect) {
       const nextStreak = streak + 1;
+      const nextLongestStreak = Math.max(longestStreak, nextStreak);
+      const nextScore = score + calculateQuestionPoints(nextStreak, cutoffTime);
       setStreak(nextStreak);
-      if (nextStreak > longestStreak) setLongestStreak(nextStreak);
+      setLongestStreak(nextLongestStreak);
+      setScore(nextScore);
       setCorrectAnswers(prev => prev + 1);
-      nextQuestion(true);
+      nextQuestion(true, nextLongestStreak, nextScore);
     } else {
       setStreak(0);
       setShowCorrection(true);
     }
   };
 
-  const nextQuestion = (wasLastCorrect) => {
+  const nextQuestion = (wasLastCorrect, updatedLongestStreak = longestStreak, updatedScore = score) => {
     setShowCorrection(false);
     setUserAnswer('');
     if (currentIndex + 1 >= TOTAL_QUESTIONS) {
       const finalCorrectCount = correctAnswers + (wasLastCorrect ? 1 : 0);
-      calculateAndSaveReward(finalCorrectCount);
+      calculateAndSaveReward(finalCorrectCount, updatedLongestStreak, updatedScore);
       setGameState('results');
     } else {
       setCurrentIndex(prev => prev + 1);
@@ -270,6 +293,7 @@ export default function App() {
     setCorrectAnswers(0);
     setStreak(0);
     setLongestStreak(0);
+    setScore(0);
     setHistory([]);
     setUserAnswer('');
     setShowCorrection(false);
@@ -278,7 +302,24 @@ export default function App() {
   };
 
   // --- INTEGRITY & REWARD MATH ---
-  const calculateMaxGrade = (tables) => {
+  const getTimerConfig = (timerVal) =>
+    TIME_LIMITS.find(t => t.value === timerVal) || TIME_LIMITS[1];
+
+  const getStreakMultiplier = (streakLen) =>
+    Math.min(5, 1 + Math.floor(streakLen / 5) * 0.5);
+
+  const calculateQuestionPoints = (streakLen, timerVal = cutoffTime) => {
+    const basePoints = timerVal === 3 ? 150 : timerVal === 5 ? 100 : timerVal === 10 ? 75 : 50;
+    return Math.round(basePoints * getStreakMultiplier(streakLen));
+  };
+
+  const calculateStreakBonus = (bestStreak) => {
+    if (bestStreak < 5) return 0;
+    const bonus = Math.floor(bestStreak / 5) + (bestStreak >= 15 ? Math.floor((bestStreak - 10) / 5) : 0);
+    return Math.min(12, bonus);
+  };
+
+  const calculateTableCap = (tables) => {
     const selectedCount = tables.length;
     let baseWeight = 0;
     tables.forEach(t => {
@@ -291,12 +332,22 @@ export default function App() {
     return Math.min(100, Math.round(calculatedCap));
   };
 
-  const calculateAndSaveReward = (correctCount) => {
+  const calculateMaxGrade = (tables, timerVal = cutoffTime) => {
+    const tableCap = calculateTableCap(tables);
+    const { modifier } = getTimerConfig(timerVal);
+    return Math.max(10, Math.min(100, tableCap + modifier));
+  };
+
+  const calculateAndSaveReward = (correctCount, bestStreak = longestStreak, finalScore = score) => {
     const rawAccuracy = Math.round((correctCount / TOTAL_QUESTIONS) * 100);
-    const maxGradePossible = calculateMaxGrade(selectedTables);
+    const timerCfg = getTimerConfig(cutoffTime);
+    const maxGradePossible = calculateMaxGrade(selectedTables, cutoffTime);
     
-    // Final Grade throttled by complexity selection
-    const finalGrade = Math.round((correctCount / TOTAL_QUESTIONS) * maxGradePossible);
+    // Final Grade scales by complexity & timer cap, plus Ninja speed cushion and streak bonus
+    const baseGrade = Math.round((correctCount / TOTAL_QUESTIONS) * maxGradePossible);
+    const appliedSpeedBonus = correctCount > 0 ? timerCfg.speedBonus : 0;
+    const streakBonus = calculateStreakBonus(bestStreak);
+    const finalGrade = Math.min(maxGradePossible, baseGrade + appliedSpeedBonus + streakBonus);
 
     const eligible = CREATURES.filter(c => c.threshold <= finalGrade);
     const lockedEligible = eligible.filter(c => !unlockedCreatures.includes(c.id));
@@ -330,7 +381,7 @@ export default function App() {
       isNew = false;
     }
 
-    setDisplayedReward({ creature: selectedCreature, isNew, finalGrade, rawAccuracy });
+    setDisplayedReward({ creature: selectedCreature, isNew, finalGrade, rawAccuracy, timerLabel: timerCfg.label, timerModifier: timerCfg.modifier, speedBonus: appliedSpeedBonus, streakBonus, totalScore: finalScore });
 
     // Automatically trigger the 3D Adventure Video celebration if a new milestone creature is unlocked!
     if (isNew && selectedCreature) {
@@ -341,7 +392,9 @@ export default function App() {
 
   // --- UI COMPONENTS ---
   const renderSetup = () => {
-    const maxPotentialGrade = calculateMaxGrade(selectedTables);
+    const tableCap = calculateTableCap(selectedTables);
+    const activeTimer = getTimerConfig(cutoffTime);
+    const maxPotentialGrade = calculateMaxGrade(selectedTables, cutoffTime);
     
     return (
       <div className="flex flex-col items-center max-w-2xl mx-auto p-6 space-y-8 animate-in fade-in zoom-in duration-500">
@@ -386,6 +439,10 @@ export default function App() {
                 <span className="text-xl font-extrabold text-slate-800">
                   Grade {maxPotentialGrade} / 100
                 </span>
+                <span className="text-[11px] font-semibold text-slate-500 mt-0.5">
+                  Tables: {tableCap} • Timer ({activeTimer.label}): {activeTimer.modifier > 0 ? `+${activeTimer.modifier}` : activeTimer.modifier}
+                  {activeTimer.speedBonus > 0 ? ` (+${activeTimer.speedBonus} Speed Cushion)` : ''}
+                </span>
               </div>
             </div>
             
@@ -396,7 +453,7 @@ export default function App() {
                 </span>
               ) : (
                 <span className="text-xs font-medium text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-                  Select harder tables to reach 100!
+                  Pick harder tables or a faster timer to reach 100!
                 </span>
               )}
             </div>
@@ -443,14 +500,17 @@ export default function App() {
                 <button
                   key={limit.value}
                   onClick={() => setCutoffTime(limit.value)}
-                  className={`py-3 px-2 text-sm font-bold rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                  className={`py-3 px-2 text-sm font-bold rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1.5 ${
                     cutoffTime === limit.value
                       ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
                       : 'border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100'
                   }`}
                 >
                   <Clock size={16} />
-                  {limit.label}
+                  <span>{limit.label}</span>
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${limit.badgeClass}`}>
+                    {limit.badge}
+                  </span>
                 </button>
               ))}
             </div>
@@ -469,9 +529,19 @@ export default function App() {
     if (!currentQ) return null; 
     const progressPercent = cutoffTime === 0 || showCorrection ? 100 : (timeLeft / cutoffTime) * 100;
     
-    // Live grade calculation based on complexity cap
-    const maxGradePossible = calculateMaxGrade(selectedTables);
-    const currentGrade = currentIndex === 0 ? maxGradePossible : Math.round((correctAnswers / currentIndex) * maxGradePossible);
+    // Live grade calculation based on complexity, timer cap, and streak bonus
+    const timerCfg = getTimerConfig(cutoffTime);
+    const maxGradePossible = calculateMaxGrade(selectedTables, cutoffTime);
+    const liveStreakBonus = calculateStreakBonus(longestStreak);
+    const currentGrade =
+      currentIndex === 0
+        ? maxGradePossible
+        : Math.min(
+            maxGradePossible,
+            Math.round((correctAnswers / currentIndex) * maxGradePossible) +
+              (correctAnswers > 0 ? timerCfg.speedBonus : 0) +
+              liveStreakBonus
+          );
     
     let progressColor = "bg-emerald-500";
     if (cutoffTime > 0 && !showCorrection) {
@@ -484,12 +554,13 @@ export default function App() {
       <div className="flex flex-col items-center max-w-md mx-auto p-4 space-y-6 animate-in slide-in-from-right duration-300">
         <div className="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex flex-col"><span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Question</span><span className="text-xl font-black text-indigo-700">{currentIndex + 1} / {TOTAL_QUESTIONS}</span></div>
+          <div className="flex flex-col items-center"><span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Score</span><span className="text-xl font-black text-amber-500">{score.toLocaleString()}</span></div>
           <div className="flex flex-col items-end"><span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Grade</span><span className="text-xl font-black text-emerald-600">{currentGrade}</span></div>
         </div>
 
         <div className={`w-full rounded-3xl shadow-xl p-8 flex flex-col items-center justify-center min-h-[220px] border-b-8 relative overflow-hidden transition-colors duration-300 ${showCorrection ? 'bg-red-50 border-red-200' : 'bg-white border-indigo-100'}`}>
           {!showCorrection && streak >= 3 && (
-            <div className="absolute top-4 right-4 flex items-center gap-1 text-orange-500 animate-pulse"><Zap fill="currentColor" size={20} /><span className="font-bold">{streak} Streak!</span></div>
+            <div className="absolute top-4 right-4 flex items-center gap-1 text-orange-500 animate-pulse"><Zap fill="currentColor" size={20} /><span className="font-bold">{streak} Streak! ({getStreakMultiplier(streak)}×)</span></div>
           )}
           {showCorrection ? (
             <div className="flex flex-col items-center animate-in zoom-in duration-300">
@@ -534,7 +605,7 @@ export default function App() {
   const renderResults = () => {
     if (history.length === 0 || !displayedReward.creature) return null;
 
-    const { creature, isNew, finalGrade, rawAccuracy } = displayedReward;
+    const { creature, isNew, finalGrade, rawAccuracy, timerLabel, timerModifier = 0, speedBonus = 0, streakBonus = 0, totalScore = 0 } = displayedReward;
     const missedQuestions = history.filter(h => !h.isCorrect);
 
     return (
@@ -553,12 +624,7 @@ export default function App() {
             <div className="text-8xl mb-4 filter drop-shadow-2xl animate-bounce relative z-10">{creature.emoji}</div>
             <h2 className="text-3xl font-black text-white mb-1 tracking-tight relative z-10">{creature.name}</h2>
             
-            <div className={`text-sm font-bold uppercase tracking-widest mb-2 relative z-10 ${
-              creature.rarity === 'Mythic' ? 'text-rose-400' :
-              creature.rarity === 'Legendary' ? 'text-fuchsia-400' :
-              creature.rarity === 'Rare' ? 'text-blue-400' :
-              creature.rarity === 'Uncommon' ? 'text-orange-400' : 'text-emerald-400'
-            }`}>{creature.rarity}</div>
+            <div className={`text-sm font-bold uppercase tracking-widest mb-2 relative z-10 ${getRarityTextColor(creature.rarity)}`}>{creature.rarity}</div>
 
             <div className="text-xs text-indigo-300 font-bold mb-4 relative z-10">
               ⚡ {creature.element || 'Cosmic'}
@@ -580,18 +646,41 @@ export default function App() {
               </button>
             </div>
 
-            <div className="w-full grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-white/10 relative z-10">
+            <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10 relative z-10">
               <div className="flex flex-col items-center">
                 <span className="text-[10px] text-white/50 font-bold uppercase text-center leading-tight mb-1">Complexity<br/>Grade</span>
                 <span className="text-2xl font-black text-white">{finalGrade}</span>
+                <span
+                  className={`mt-1.5 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                    timerModifier > 0
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : timerModifier === 0
+                      ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                      : timerModifier <= -20
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                  }`}
+                >
+                  {timerLabel}: {timerModifier > 0 ? `+${timerModifier}` : timerModifier}
+                  {speedBonus > 0 ? ` (+${speedBonus} Spd)` : ''}
+                </span>
               </div>
-              <div className="flex flex-col items-center border-l border-white/10">
+              <div className="flex flex-col items-center sm:border-l border-white/10">
+                <span className="text-[10px] text-white/50 font-bold uppercase text-center leading-tight mb-1">Total<br/>Score</span>
+                <span className="text-2xl font-black text-amber-400">{totalScore.toLocaleString()}</span>
+              </div>
+              <div className="flex flex-col items-center sm:border-l border-white/10">
                 <span className="text-[10px] text-white/50 font-bold uppercase text-center leading-tight mb-1">Raw<br/>Accuracy</span>
                 <span className="text-2xl font-black text-white">{rawAccuracy}%</span>
               </div>
-              <div className="flex flex-col items-center border-l border-white/10">
+              <div className="flex flex-col items-center sm:border-l border-white/10">
                 <span className="text-[10px] text-white/50 font-bold uppercase text-center leading-tight mb-1">Longest<br/>Streak</span>
                 <span className="text-2xl font-black text-white">{longestStreak}</span>
+                {streakBonus > 0 && (
+                  <span className="mt-1.5 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                    +{streakBonus} Grade Bonus
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -630,9 +719,7 @@ export default function App() {
             <div className="text-9xl mb-4 filter drop-shadow-2xl mt-4">{c.emoji}</div>
             <h2 className="text-3xl font-black text-white mb-1 tracking-tight">{c.name}</h2>
             
-            <div className={`text-sm font-bold uppercase tracking-widest mb-1 ${
-              c.rarity === 'Mythic' ? 'text-rose-400' : c.rarity === 'Legendary' ? 'text-fuchsia-400' : c.rarity === 'Rare' ? 'text-blue-400' : c.rarity === 'Uncommon' ? 'text-orange-400' : 'text-emerald-400'
-            }`}>{c.rarity}</div>
+            <div className={`text-sm font-bold uppercase tracking-widest mb-1 ${getRarityTextColor(c.rarity)}`}>{c.rarity}</div>
 
             <div className="text-xs text-indigo-300 font-bold mb-4">
               ⚡ {c.element || 'Cosmic Power'}
